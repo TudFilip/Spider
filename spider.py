@@ -29,50 +29,6 @@ def logger_config():
 logger = logger_config()
 
 
-def search_links():
-    url = input("URL:")
-    tag = input("Tag:")
-    try:
-        req = requests.get(url)
-        url_html = BeautifulSoup(req.text, 'html.parser')
-        for a_element in url_html.find_all('a', href=True):
-            # check if <a></a> contains specified tag
-            if a_element.get(tag):
-                # check if the link in <a></a> is valid
-                try:
-                    my_link = a_element.get('href')
-                    link_req = requests.get(my_link)
-                    # link is valid if his status code is 200
-                    if link_req.status_code == 200:
-                        info = requests.head(my_link)
-                        link_size_and_type = []
-
-                        # if 'content-length' header is present, save link size in KB, otherwise set his size to 0
-                        if 'content-length' in info.headers:
-                            if int(info.headers['content-length']) == 0:
-                                link_size_and_type.append(0)
-                            else:
-                                link_size_and_type.append(float("{:.2f}".format(int(info.headers['content-length']) / 1024)))
-                        else:
-                            link_size_and_type.append(0)
-
-                        # if 'content-type' header is present, save link type, otherwise set his type to 'Unknown'
-                        if 'content-type' in info.headers:
-                            link_size_and_type.append(info.headers['content-type'])
-                        else:
-                            link_size_and_type.append('Unknown')
-
-                        print(f'{my_link} - {link_size_and_type[0]} KB - {link_size_and_type[1]}')
-
-                except RequestException as e:
-                    print(f'Founded link is not valid! - {e}')
-                    logger.warning(e)
-
-    except RequestException as e:
-        print(f'Given url is not valid! - {e}')
-        logger.warning(e)
-
-
 class SpiderTool(tkinter.Tk):
     __TOOL_NAME = 'Spider'
     __TOOL_SIZE = '700x400'
@@ -106,7 +62,7 @@ class SpiderTool(tkinter.Tk):
         self.__create_links_treeview()
 
     def __create_search_button(self):
-        self.search_button = tkinter.Button(self, text='Search')
+        self.search_button = tkinter.Button(self, text='Search', command=self.__search)
         self.search_button.configure(width=10, height=1)
         self.search_button.place(x=225, y=70)
 
@@ -144,8 +100,83 @@ class SpiderTool(tkinter.Tk):
         self.vsb.place(x=675, y=105, height=286)
         self.tree.configure(yscrollcommand=self.vsb.set)
 
+    def __search_links(self, url: str, tag: str):
+        try:
+            req = requests.get(url)
+            url_html = BeautifulSoup(req.text, 'html.parser')
+            max_link_lines = 1
+            style = tkinter.ttk.Style()
+            link_index = 0
+            tag_found = 0
+            for a_element in url_html.find_all('a', href=True):
+                # check if <a></a> contains specified tag
+                if a_element.get(tag):
+                    # check if the link in <a></a> is valid
+                    try:
+                        tag_found = 1
+                        my_link = a_element.get('href')
+                        link_req = requests.get(my_link)
+                        # link is valid if his status code is 200
+                        if link_req.status_code == 200:
+                            info = requests.head(my_link)
+                            link_size_and_type = []
+
+                            # if 'content-length' header is present, save link size in KB, otherwise set his size to 0
+                            if 'content-length' in info.headers:
+                                if int(info.headers['content-length']) == 0:
+                                    link_size_and_type.append(0)
+                                else:
+                                    link_size_and_type.append(
+                                        float("{:.2f}".format(int(info.headers['content-length']) / 1024)))
+                            else:
+                                link_size_and_type.append(0)
+
+                            # if 'content-type' header is present, save link type, otherwise set his type to 'Unknown'
+                            if 'content-type' in info.headers:
+                                link_size_and_type.append(info.headers['content-type'])
+                            else:
+                                link_size_and_type.append('Unknown')
+
+                            if link_index == 0:
+                                self.tree.delete(*self.tree.get_children())
+
+                            self.tree.insert('', 'end', values=(link_index,
+                                                                my_link,
+                                                                link_size_and_type[0],
+                                                                link_size_and_type[1])
+                                             )
+                            link_index += 1
+                            print(f'{my_link} - {link_size_and_type[0]} KB - {link_size_and_type[1]}')
+
+                    except RequestException as e:
+                        logger.warning(e)
+
+            if tag_found == 0:
+                self.tree.delete(*self.tree.get_children())
+                self.tree.insert('', 'end', values=('', 'Tag not found!', '', ''))
+
+        except RequestException as e:
+            logger.warning(e)
+            self.tree.delete(*self.tree.get_children())
+            self.tree.insert('', 'end', values=('', 'Invalid URL!', '', ''))
+
+    def __search(self):
+        url = self.url_entry.get()
+        tag = self.tag_entry.get()
+        if url and tag:
+            self.tree.delete(*self.tree.get_children())
+            self.tree.insert('', 'end', values=('', 'Searching...', '', ''))
+            self.search_button['state'] = 'disabled'
+            self.__search_links(url, tag)
+            self.search_button.destroy()
+            self.__create_search_button()
+        else:
+            tkinter.messagebox.showerror('Error', 'URL and Tag are required')
+            logger.error("Invalid given input!")
+            self.search_button.destroy()
+            self.__create_search_button()
+
 
 if __name__ == '__main__':
-    # search_links()
     app = SpiderTool()
     app.mainloop()
