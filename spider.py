@@ -1,9 +1,12 @@
+import tkinter
 import requests
 import logging
 
 
 from bs4 import BeautifulSoup
 from requests import RequestException
+from tkinter import messagebox
+from tkinter import ttk
 
 
 def logger_config():
@@ -70,5 +73,79 @@ def search_links():
         logger.warning(e)
 
 
+class SpiderTool(tkinter.Tk):
+    __TOOL_NAME = 'Spider'
+    __TOOL_SIZE = '700x400'
+    __TOOL_BACKGROUND = '#d9d9d9'
+
+    def __init__(self):
+        super().__init__()
+        self.title(self.__TOOL_NAME)
+        self.geometry(self.__TOOL_SIZE)
+        self.resizable(False, False)
+        self.configure(background=self.__TOOL_BACKGROUND)
+
+        # Url label and entry
+        self.url_label = tkinter.Label(self, text='URL:', bg=self.__TOOL_BACKGROUND)
+        self.url_label.place(x=180, y=10)
+        self.url_entry = tkinter.Entry(self, width=50)
+        self.url_entry.place(x=215, y=10)
+
+        # Tag label and entry
+        self.tag_label = tkinter.Label(self, text='Tag:', bg=self.__TOOL_BACKGROUND)
+        self.tag_label.place(x=180, y=40)
+        self.tag_entry = tkinter.Entry(self, width=50)
+        self.tag_entry.place(x=215, y=40)
+
+        # Create buttons
+        self.__create_search_button()
+        self.__create_links_button()
+        self.__create_warnings_button()
+
+        # Treeview with links
+        self.__create_links_treeview()
+
+    def __create_search_button(self):
+        self.search_button = tkinter.Button(self, text='Search')
+        self.search_button.configure(width=10, height=1)
+        self.search_button.place(x=225, y=70)
+
+    def __create_links_button(self):
+        self.treeview_show_button = tkinter.Button(self, text='Links')
+        self.treeview_show_button.configure(width=10, height=1)
+        self.treeview_show_button.place(x=325, y=70)
+
+    def __create_warnings_button(self):
+        self.warnings_button = tkinter.Button(self, text='Warnings')
+        self.warnings_button.configure(width=10, height=1)
+        self.warnings_button.place(x=425, y=70)
+
+    # Treeview in which links are shown
+    def __create_links_treeview(self):
+        self.tree = tkinter.ttk.Treeview(master=self,
+                                         columns=('id', 'link', 'size', 'type'),
+                                         show='headings',
+                                         height=13
+                                         )
+        self.tree.column('id', width=30, anchor='center')
+        self.tree.column('link', width=400)
+        self.tree.column('size', width=90, anchor='center')
+        self.tree.column('type', width=140, anchor='center')
+
+        self.tree.heading('id', text='ID')
+        self.tree.heading('link', text='Link')
+        self.tree.heading('size', text='Size (KB)', anchor='center')
+        self.tree.heading('type', text='Type', anchor='center')
+
+        self.tree.place(x=10, y=105)
+
+        # Scrollbar
+        self.vsb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
+        self.vsb.place(x=675, y=105, height=286)
+        self.tree.configure(yscrollcommand=self.vsb.set)
+
+
 if __name__ == '__main__':
-    search_links()
+    # search_links()
+    app = SpiderTool()
+    app.mainloop()
