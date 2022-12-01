@@ -183,10 +183,10 @@ class SpiderTool(tkinter.Tk):
             self.search_button.destroy()
             self.__create_search_button()
 
-    def run(self):
+    def run_spider(self):
         self.mainloop()
 
 
 if __name__ == '__main__':
     app = SpiderTool()
-    app.run()
+    app.run_spider()
