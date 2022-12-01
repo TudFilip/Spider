@@ -63,20 +63,39 @@ class SpiderTool(tkinter.Tk):
         # Treeview with links
         self.__create_links_treeview()
 
+        # Warnings
+        self.__create_warnings_frame()
+
     def __create_search_button(self):
         self.search_button = tkinter.Button(self, text='Search', command=threading.Thread(target=self.__search).start)
         self.search_button.configure(width=10, height=1)
         self.search_button.place(x=225, y=70)
 
     def __create_links_button(self):
-        self.treeview_show_button = tkinter.Button(self, text='Links')
+        self.treeview_show_button = tkinter.Button(self, text='Links', command=self.__show_treeview)
         self.treeview_show_button.configure(width=10, height=1)
         self.treeview_show_button.place(x=325, y=70)
 
     def __create_warnings_button(self):
-        self.warnings_button = tkinter.Button(self, text='Warnings')
+        self.warnings_button = tkinter.Button(self, text='Warnings', command=self.__hide_treeview)
         self.warnings_button.configure(width=10, height=1)
         self.warnings_button.place(x=425, y=70)
+
+    def __hide_treeview(self):
+        self.tree.place_forget()
+        self.vsb.place_forget()
+        self.warnings.place(x=10, y=105)
+
+    def __show_treeview(self):
+        self.tree.place(x=10, y=105)
+        self.vsb.place(x=675, y=105, height=286)
+        self.warnings.place_forget()
+
+    # Text frame in which will be displayed all warnings during searching
+    def __create_warnings_frame(self):
+        self.warnings = tkinter.Text(self, width=84, height=17)
+        self.warnings.place(x=15, y=105)
+        self.warnings.place_forget()
 
     # Treeview in which links are shown
     def __create_links_treeview(self):
