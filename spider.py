@@ -102,6 +102,9 @@ class SpiderTool(tkinter.Tk):
         self.__create_links_button()
         self.__create_warnings_button()
 
+        # Treeview with links
+        self.__create_links_treeview()
+
     def __create_search_button(self):
         self.search_button = tkinter.Button(self, text='Search')
         self.search_button.configure(width=10, height=1)
@@ -117,6 +120,32 @@ class SpiderTool(tkinter.Tk):
         self.warnings_button.configure(width=10, height=1)
         self.warnings_button.place(x=425, y=70)
 
+    # Treeview in which links are shown
+    def __create_links_treeview(self):
+        self.tree = tkinter.ttk.Treeview(master=self,
+                                         columns=('id', 'link', 'size', 'type'),
+                                         show='headings',
+                                         height=13
+                                         )
+        self.tree.column('id', width=30, anchor='center')
+        self.tree.column('link', width=400)
+        self.tree.column('size', width=90, anchor='center')
+        self.tree.column('type', width=140, anchor='center')
+
+        self.tree.heading('id', text='ID')
+        self.tree.heading('link', text='Link')
+        self.tree.heading('size', text='Size (KB)', anchor='center')
+        self.tree.heading('type', text='Type', anchor='center')
+
+        self.tree.place(x=10, y=105)
+
+        # Scrollbar
+        self.vsb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
+        self.vsb.place(x=675, y=105, height=286)
+        self.tree.configure(yscrollcommand=self.vsb.set)
+
 
 if __name__ == '__main__':
-    search_links()
+    # search_links()
+    app = SpiderTool()
+    app.mainloop()
