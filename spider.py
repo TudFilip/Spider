@@ -1,7 +1,29 @@
 import requests
+import logging
+
 
 from bs4 import BeautifulSoup
 from requests import RequestException
+
+
+def logger_config():
+    my_logger = logging.getLogger(__name__)
+    errors_handler = logging.FileHandler('errors.log', mode='w')
+    warnings_handler = logging.FileHandler('warnings.log', mode='w')
+
+    errors_handler.setLevel(logging.ERROR)
+    warnings_handler.setLevel(logging.WARNING)
+
+    errors_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    warnings_handler.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
+
+    my_logger.addHandler(errors_handler)
+    my_logger.addHandler(warnings_handler)
+
+    return my_logger
+
+
+logger = logger_config()
 
 
 def search_links():
@@ -41,9 +63,11 @@ def search_links():
 
                 except RequestException as e:
                     print(f'Founded link is not valid! - {e}')
+                    logger.warning(e)
 
     except RequestException as e:
         print(f'Given url is not valid! - {e}')
+        logger.warning(e)
 
 
 if __name__ == '__main__':
