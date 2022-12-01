@@ -2,6 +2,7 @@ import tkinter
 import requests
 import logging
 import threading
+import webbrowser
 
 
 from bs4 import BeautifulSoup
@@ -95,6 +96,7 @@ class SpiderTool(tkinter.Tk):
         self.tree.heading('type', text='Type', anchor='center')
 
         self.tree.place(x=10, y=105)
+        self.tree.bind('<Double-1>', self.__open_link)
 
         style = tkinter.ttk.Style()
         style.configure('Treeview', rowheight=26)
@@ -104,12 +106,15 @@ class SpiderTool(tkinter.Tk):
         self.vsb.place(x=675, y=105, height=286)
         self.tree.configure(yscrollcommand=self.vsb.set)
 
+    def __open_link(self, event):
+        item = self.tree.identify('item', event.x, event.y)
+        link = self.tree.item(item, 'values')[1]
+        webbrowser.open(link)
+
     def __search_links(self, url: str, tag: str):
         try:
             req = requests.get(url)
             url_html = BeautifulSoup(req.text, 'html.parser')
-            max_link_lines = 1
-            style = tkinter.ttk.Style()
             link_index = 0
             tag_found = 0
             for a_element in url_html.find_all('a', href=True):
