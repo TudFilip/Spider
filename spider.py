@@ -1,6 +1,7 @@
 import tkinter
 import requests
 import logging
+import threading
 
 
 from bs4 import BeautifulSoup
@@ -62,7 +63,7 @@ class SpiderTool(tkinter.Tk):
         self.__create_links_treeview()
 
     def __create_search_button(self):
-        self.search_button = tkinter.Button(self, text='Search', command=self.__search)
+        self.search_button = tkinter.Button(self, text='Search', command=threading.Thread(target=self.__search).start)
         self.search_button.configure(width=10, height=1)
         self.search_button.place(x=225, y=70)
 
@@ -81,7 +82,7 @@ class SpiderTool(tkinter.Tk):
         self.tree = tkinter.ttk.Treeview(master=self,
                                          columns=('id', 'link', 'size', 'type'),
                                          show='headings',
-                                         height=13
+                                         # height=13,
                                          )
         self.tree.column('id', width=30, anchor='center')
         self.tree.column('link', width=400)
@@ -94,6 +95,9 @@ class SpiderTool(tkinter.Tk):
         self.tree.heading('type', text='Type', anchor='center')
 
         self.tree.place(x=10, y=105)
+
+        style = tkinter.ttk.Style()
+        style.configure('Treeview', rowheight=26)
 
         # Scrollbar
         self.vsb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
@@ -146,8 +150,6 @@ class SpiderTool(tkinter.Tk):
                                                                 link_size_and_type[1])
                                              )
                             link_index += 1
-                            print(f'{my_link} - {link_size_and_type[0]} KB - {link_size_and_type[1]}')
-
                     except RequestException as e:
                         logger.warning(e)
 
