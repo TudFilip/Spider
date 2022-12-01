@@ -1,9 +1,12 @@
+import tkinter
 import requests
 import logging
 
 
 from bs4 import BeautifulSoup
 from requests import RequestException
+from tkinter import messagebox
+from tkinter import ttk
 
 
 def logger_config():
@@ -68,6 +71,51 @@ def search_links():
     except RequestException as e:
         print(f'Given url is not valid! - {e}')
         logger.warning(e)
+
+
+class SpiderTool(tkinter.Tk):
+    __TOOL_NAME = 'Spider'
+    __TOOL_SIZE = '700x400'
+    __TOOL_BACKGROUND = '#d9d9d9'
+
+    def __init__(self):
+        super().__init__()
+        self.title(self.__TOOL_NAME)
+        self.geometry(self.__TOOL_SIZE)
+        self.resizable(False, False)
+        self.configure(background=self.__TOOL_BACKGROUND)
+
+        # Url label and entry
+        self.url_label = tkinter.Label(self, text='URL:', bg=self.__TOOL_BACKGROUND)
+        self.url_label.place(x=180, y=10)
+        self.url_entry = tkinter.Entry(self, width=50)
+        self.url_entry.place(x=215, y=10)
+
+        # Tag label and entry
+        self.tag_label = tkinter.Label(self, text='Tag:', bg=self.__TOOL_BACKGROUND)
+        self.tag_label.place(x=180, y=40)
+        self.tag_entry = tkinter.Entry(self, width=50)
+        self.tag_entry.place(x=215, y=40)
+
+        # Create buttons
+        self.__create_search_button()
+        self.__create_links_button()
+        self.__create_warnings_button()
+
+    def __create_search_button(self):
+        self.search_button = tkinter.Button(self, text='Search')
+        self.search_button.configure(width=10, height=1)
+        self.search_button.place(x=225, y=70)
+
+    def __create_links_button(self):
+        self.treeview_show_button = tkinter.Button(self, text='Links')
+        self.treeview_show_button.configure(width=10, height=1)
+        self.treeview_show_button.place(x=325, y=70)
+
+    def __create_warnings_button(self):
+        self.warnings_button = tkinter.Button(self, text='Warnings')
+        self.warnings_button.configure(width=10, height=1)
+        self.warnings_button.place(x=425, y=70)
 
 
 if __name__ == '__main__':
