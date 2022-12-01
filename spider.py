@@ -139,10 +139,10 @@ class SpiderTool(tkinter.Tk):
             for a_element in url_html.find_all('a', href=True):
                 # check if <a></a> contains specified tag
                 if a_element.get(tag):
+                    my_link = a_element.get('href')
                     # check if the link in <a></a> is valid
                     try:
                         tag_found = 1
-                        my_link = a_element.get('href')
                         link_req = requests.get(my_link)
                         # link is valid if his status code is 200
                         if link_req.status_code == 200:
@@ -176,6 +176,8 @@ class SpiderTool(tkinter.Tk):
                             link_index += 1
                     except RequestException as e:
                         logger.warning(e)
+                        self.warnings.insert(tkinter.END, "WARNING - Invalid link inside <a></a> tag!\n")
+                        self.warnings.insert(tkinter.END, f"        - Link: {my_link}\n")
 
             if tag_found == 0:
                 self.tree.delete(*self.tree.get_children())
@@ -185,6 +187,8 @@ class SpiderTool(tkinter.Tk):
             logger.warning(e)
             self.tree.delete(*self.tree.get_children())
             self.tree.insert('', 'end', values=('', 'Invalid URL!', '', ''))
+            self.warnings.insert(tkinter.END, "WARNING - Invalid URL!\n")
+            self.warnings.insert(tkinter.END, f"      - Given URL: {url}\n")
 
     def __search(self):
         url = self.url_entry.get()
