@@ -1,8 +1,0 @@
-ERROR - Invalid given input!
-ERROR - Invalid given input!
-ERROR - Invalid given input!
-WARNING - Invalid URL 'jgjgjgj': No scheme supplied. Perhaps you meant http://jgjgjgj?
-WARNING - Invalid URL '/favorite': No scheme supplied. Perhaps you meant http:///favorite?
-WARNING - Invalid URL '/authentication?redirectUrl=%2Fautoturisme': No scheme supplied. Perhaps you meant http:///authentication?redirectUrl=%2Fautoturisme?
-WARNING - Invalid URL '/authentication?redirectUrl=%2Fautoturisme': No scheme supplied. Perhaps you meant http:///authentication?redirectUrl=%2Fautoturisme?
-WARNING - Invalid URL '/authentication?redirectUrl=%2Fautoturisme&tab=create-account': No scheme supplied. Perhaps you meant http:///authentication?redirectUrl=%2Fautoturisme&tab=create-account?

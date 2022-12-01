@@ -31,10 +31,13 @@ def logger_config():
 logger = logger_config()
 
 
+# Spider Tool class that implements all functionalities of the tool
 class SpiderTool(tkinter.Tk):
     __TOOL_NAME = 'Spider'
     __TOOL_SIZE = '700x400'
     __TOOL_BACKGROUND = '#d9d9d9'
+
+    __stop_search_flag = False
 
     def __init__(self):
         super().__init__()
@@ -59,6 +62,7 @@ class SpiderTool(tkinter.Tk):
         self.__create_search_button()
         self.__create_links_button()
         self.__create_warnings_button()
+        self.__create_stop_search_button()
 
         # Treeview with links
         self.__create_links_treeview()
@@ -66,30 +70,43 @@ class SpiderTool(tkinter.Tk):
         # Warnings
         self.__create_warnings_frame()
 
+    # Create 4 buttons: Search, Links, Warnings, Stop
     def __create_search_button(self):
         self.search_button = tkinter.Button(self, text='Search', command=threading.Thread(target=self.__search).start)
         self.search_button.configure(width=10, height=1)
-        self.search_button.place(x=225, y=70)
+        self.search_button.place(x=175, y=70)
 
     def __create_links_button(self):
         self.treeview_show_button = tkinter.Button(self, text='Links', command=self.__show_treeview)
         self.treeview_show_button.configure(width=10, height=1)
-        self.treeview_show_button.place(x=325, y=70)
+        self.treeview_show_button.place(x=275, y=70)
 
     def __create_warnings_button(self):
         self.warnings_button = tkinter.Button(self, text='Warnings', command=self.__hide_treeview)
         self.warnings_button.configure(width=10, height=1)
-        self.warnings_button.place(x=425, y=70)
+        self.warnings_button.place(x=375, y=70)
 
+    def __create_stop_search_button(self):
+        self.stop_search_button = tkinter.Button(self, text='Stop', command=self.__stop_search)
+        self.stop_search_button.configure(width=10, height=1)
+        self.stop_search_button.place(x=475, y=70)
+        self.stop_search_button['state'] = 'disabled'
+
+    # Method used by warnings button to hide treeview and display warnings widget
     def __hide_treeview(self):
         self.tree.place_forget()
         self.vsb.place_forget()
         self.warnings.place(x=10, y=105)
 
+    # Method used by links button to hide warnings widget and display treeview with links
     def __show_treeview(self):
         self.tree.place(x=10, y=105)
         self.vsb.place(x=675, y=105, height=286)
         self.warnings.place_forget()
+
+    # Method used by Stop button to activate stop_search_flag
+    def __stop_search(self):
+        self.__stop_search_flag = True
 
     # Text frame in which will be displayed all warnings during searching
     def __create_warnings_frame(self):
@@ -102,7 +119,6 @@ class SpiderTool(tkinter.Tk):
         self.tree = tkinter.ttk.Treeview(master=self,
                                          columns=('id', 'link', 'size', 'type'),
                                          show='headings',
-                                         # height=13,
                                          )
         self.tree.column('id', width=30, anchor='center')
         self.tree.column('link', width=400)
@@ -125,11 +141,13 @@ class SpiderTool(tkinter.Tk):
         self.vsb.place(x=675, y=105, height=286)
         self.tree.configure(yscrollcommand=self.vsb.set)
 
+    # Utility method to open links from treeview
     def __open_link(self, event):
         item = self.tree.identify('item', event.x, event.y)
         link = self.tree.item(item, 'values')[1]
         webbrowser.open(link)
 
+    # Main method of tool which search for links in a given URL and display valid links into treeview
     def __search_links(self, url: str, tag: str):
         try:
             req = requests.get(url)
@@ -137,6 +155,10 @@ class SpiderTool(tkinter.Tk):
             link_index = 0
             tag_found = 0
             for a_element in url_html.find_all('a', href=True):
+                # if Stop button was pressed, stop searching for links
+                if self.__stop_search_flag:
+                    break
+
                 # check if <a></a> contains specified tag
                 if a_element.get(tag):
                     my_link = a_element.get('href')
@@ -179,7 +201,12 @@ class SpiderTool(tkinter.Tk):
                         self.warnings.insert(tkinter.END, "WARNING - Invalid link inside <a></a> tag!\n")
                         self.warnings.insert(tkinter.END, f"        - Link: {my_link}\n")
 
+            # Reinitialize stop_search_flag for next searching
+            self.__stop_search_flag = False
+
+            # If tag is not found through valid <a></a> elements, a message is displayed into treeview
             if tag_found == 0:
+                logger.error("Tag was not found!")
                 self.tree.delete(*self.tree.get_children())
                 self.tree.insert('', 'end', values=('', 'Tag not found!', '', ''))
 
@@ -190,6 +217,7 @@ class SpiderTool(tkinter.Tk):
             self.warnings.insert(tkinter.END, "WARNING - Invalid URL!\n")
             self.warnings.insert(tkinter.END, f"      - Given URL: {url}\n")
 
+    # Method called by search button
     def __search(self):
         url = self.url_entry.get()
         tag = self.tag_entry.get()
@@ -197,7 +225,9 @@ class SpiderTool(tkinter.Tk):
             self.tree.delete(*self.tree.get_children())
             self.tree.insert('', 'end', values=('', 'Searching...', '', ''))
             self.search_button['state'] = 'disabled'
+            self.stop_search_button['state'] = 'normal'
             self.__search_links(url, tag)
+            self.stop_search_button['state'] = 'disabled'
             self.search_button.destroy()
             self.__create_search_button()
         else:
@@ -206,6 +236,7 @@ class SpiderTool(tkinter.Tk):
             self.search_button.destroy()
             self.__create_search_button()
 
+    # Run method of tool
     def run_spider(self):
         self.mainloop()
 
