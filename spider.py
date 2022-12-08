@@ -3,6 +3,7 @@ import requests
 import logging
 import threading
 import webbrowser
+import math
 
 
 from bs4 import BeautifulSoup
@@ -171,15 +172,22 @@ class SpiderTool(tkinter.Tk):
                             info = requests.head(my_link)
                             link_size_and_type = []
 
-                            # if 'content-length' header is present, save link size in KB, otherwise set his size to 0
-                            if 'content-length' in info.headers:
-                                if int(info.headers['content-length']) == 0:
-                                    link_size_and_type.append(0)
-                                else:
-                                    link_size_and_type.append(
-                                        float("{:.2f}".format(int(info.headers['content-length']) / 1024)))
-                            else:
+                            if len(link_req.content) == 0:
                                 link_size_and_type.append(0)
+                            else:
+                                p = math.pow(1024, 2)
+                                s = round(len(link_req.content) / p, 3)
+                                link_size_and_type.append(s)
+
+                            # # if 'content-length' header is present, save link size in KB, otherwise set his size to 0
+                            # if 'content-length' in info.headers:
+                            #     if int(info.headers['content-length']) == 0:
+                            #         link_size_and_type.append(0)
+                            #     else:
+                            #         link_size_and_type.append(
+                            #             float("{:.2f}".format(int(info.headers['content-length']) / 1024)))
+                            # else:
+                            #     link_size_and_type.append(0)
 
                             # if 'content-type' header is present, save link type, otherwise set his type to 'Unknown'
                             if 'content-type' in info.headers:
